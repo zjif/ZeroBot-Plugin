@@ -192,6 +192,7 @@ import (
 	_ "github.com/FloatTech/ZeroBot-Plugin/plugin/managerplugin" // 自定义群管插件
 	_ "github.com/FloatTech/ZeroBot-Plugin/plugin/moehu"         // 图库
 	_ "github.com/FloatTech/ZeroBot-Plugin/plugin/phigros"       // phigros b19
+	_ "github.com/FloatTech/ZeroBot-Plugin/plugin/sdwebui"       // sdwebui
 
 	_ "github.com/FloatTech/ZeroBot-Plugin/plugin/antirepeat" // 限制复读
 
