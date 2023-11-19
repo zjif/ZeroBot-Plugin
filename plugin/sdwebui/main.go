@@ -25,11 +25,11 @@ type arg struct {
 func init() {
 	en := control.AutoRegister(&ctrl.Options[*zero.Ctx]{
 		DisableOnDefault: true,
-		Brief:            "\"稳定扩散网页界面\"",
+		Brief:            "",
 		Help: "/ai -s [prompt] -n [negativeprompt] -seed [num] -[l|w]\n" +
 			"/getmodels\n" +
 			"/usemodel [modelname]\n" +
-			"/setapi [url]" +
+			"/setapi [url]\n" +
 			"Tips: -l is 512*768, -w is 768*512",
 		PrivateDataFolder: "sdwebui",
 	}).ApplySingle(ctxext.DefaultSingle)
@@ -102,7 +102,7 @@ func init() {
 			}
 			ctx.SendChain(message.Text(sb.String()))
 		})
-	en.OnRegex(`/usemodel (.*)`).SetBlock(true).Limit(ctxext.LimitByGroup).
+	en.OnRegex(`/usemodel (.*)`, zero.AdminPermission).SetBlock(true).Limit(ctxext.LimitByGroup).
 		Handle(func(ctx *zero.Ctx) {
 			modelname := ctx.State["regex_matched"].([]string)[1]
 			err := changemodel(modelname)
@@ -112,7 +112,7 @@ func init() {
 			}
 			ctx.SendChain(message.Text("设置成功"))
 		})
-	en.OnRegex(`/setapi (.*)`).SetBlock(true).Limit(ctxext.LimitByGroup).
+	en.OnRegex(`/setapi (.*)`, zero.SuperUserPermission).SetBlock(true).Limit(ctxext.LimitByGroup).
 		Handle(func(ctx *zero.Ctx) {
 			api := ctx.State["regex_matched"].([]string)[1]
 			if !strings.Contains(api, "http") {
