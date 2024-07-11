@@ -272,7 +272,12 @@ func init() {
 				ctx.SendChain(message.Text("ERROR: ", err))
 				return
 			}
-			ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + drawedFile))
+			imgdata, err := os.ReadFile(drawedFile)
+			if err != nil {
+				ctx.SendChain(message.Text("ERROR: ", err))
+				return
+			}
+			ctx.SendChain(message.ImageBytes(imgdata))
 		})
 
 	engine.OnRegex(`^查弹幕\s?(\S{1,25})\s?(\d*)$`, getPara).SetBlock(true).Handle(func(ctx *zero.Ctx) {

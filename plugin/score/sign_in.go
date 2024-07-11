@@ -12,7 +12,6 @@ import (
 	"github.com/FloatTech/AnimeAPI/bilibili"
 	"github.com/FloatTech/AnimeAPI/wallet"
 	"github.com/FloatTech/floatbox/file"
-	"github.com/FloatTech/floatbox/process"
 	"github.com/FloatTech/floatbox/web"
 	"github.com/FloatTech/imgfactory"
 	ctrl "github.com/FloatTech/zbpctrl"
@@ -106,7 +105,7 @@ func init() {
 			// 如果签到时间是今天
 			ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text("今天你已经签到过了！"))
 			if file.IsExist(drawedFile) {
-				ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + drawedFile))
+				trySendImage(ctx, drawedFile)
 			}
 			return
 		case siUpdateTimeStr != today:
@@ -176,7 +175,7 @@ func init() {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
-		ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + drawedFile))
+		trySendImage(ctx, drawedFile)
 	})
 
 	engine.OnPrefix("获得签到背景", zero.OnlyGroup).Limit(ctxext.LimitByGroup).SetBlock(true).
@@ -193,9 +192,7 @@ func init() {
 				ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text("请先签到！"))
 				return
 			}
-			if id := ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + picFile)); id.ID() == 0 {
-				ctx.SendChain(message.Text("ERROR: 消息发送失败, 账号可能被风控"))
-			}
+			trySendImage(ctx, picFile)
 		})
 	engine.OnFullMatch("查看等级排名", zero.OnlyGroup).Limit(ctxext.LimitByGroup).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
@@ -267,7 +264,7 @@ func init() {
 				ctx.SendChain(message.Text("ERROR: ", err))
 				return
 			}
-			ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + drawedFile))
+			trySendImage(ctx, drawedFile)
 		})
 	engine.OnRegex(`^设置签到预设\s*(\d+)$`, zero.SuperUserPermission).Limit(ctxext.LimitByUser).SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		key := ctx.State["regex_matched"].([]string)[1]
@@ -324,7 +321,6 @@ func getrank(count int) int {
 }
 
 func initPic(picFile string, uid int64) (avatar []byte, err error) {
-	defer process.SleepAbout1sTo2s()
 	avatar, err = web.GetData("http://q4.qlogo.cn/g?b=qq&nk=" + strconv.FormatInt(uid, 10) + "&s=640")
 	if err != nil {
 		return
@@ -341,4 +337,14 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 		return
 	}
 	return avatar, os.WriteFile(picFile, data, 0644)
+}
+
+func trySendImage(ctx *zero.Ctx, filePath string) {
+	filePath = file.BOTPATH + "/" + filePath
+	imgFile, err := os.ReadFile(filePath)
+	if err != nil {
+		ctx.SendChain(message.Text("ERROR: ", err))
+		return
+	}
+	ctx.SendChain(message.ImageBytes(imgFile))
 }
